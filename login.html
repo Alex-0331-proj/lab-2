@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShortyURL - Вхід</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light d-flex flex-column min-vh-100">
+    <div class="container d-flex justify-content-center align-items-center flex-grow-1">
+      <div class="card p-4 shadow border-0" style="width: 100%; max-width: 400px">
+        <div class="d-flex flex-column align-items-center text-center mb-4">
+          <div class="d-flex align-items-center">
+            <img
+              src="./logo.png"
+              alt="ShortyURL"
+              width="32"
+              height="32"
+              class="rounded-circle object-fit-cover"
+            />
+            <h2 class="fw-bold ms-2 mb-0">ShortyURL</h2>
+          </div>
+          <p class="text-muted">Ласкаво просимо!</p>
+        </div>
+        
+        <!-- Добавил id="loginForm" и убрал action -->
+        <form id="loginForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email</label>
+            <!-- Добавил id="logEmail" -->
+            <input type="email" id="logEmail" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Пароль</label>
+            <!-- Добавил id="logPassword" -->
+            <input type="password" id="logPassword" class="form-control" required />
+          </div>
+          <button type="submit" class="btn btn-success w-100 py-2 shadow-sm">
+            Увійти
+          </button>
+          <div class="text-center mt-3">
+            <a href="register.html" class="small text-decoration-none text-muted">
+              Створити новий акаунт
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MVC СКРИПТ ДЛЯ ЛОГИНА -->
+    <script>
+      // ==========================================
+      // 1. MODEL (Работа с данными)
+      // ==========================================
+      class LoginModel {
+        constructor() {
+          this.storageKey = 'shortyUsers';
+        }
+
+        getUsers() {
+          const users = localStorage.getItem(this.storageKey);
+          return users ? JSON.parse(users) : [];
+        }
+
+        // Проверяем, есть ли юзер с такой почтой и совпадает ли пароль
+        authenticate(email, password) {
+          const users = this.getUsers();
+          // Ищем пользователя по почте
+          const user = users.find(u => u.email === email);
+
+          if (!user) {
+            return { success: false, message: 'Користувача з таким Email не знайдено!' };
+          }
+
+          // Если юзер найден, проверяем пароль 
+          // (Если в register.html ты еще не добавил сохранение пароля, user.password будет undefined)
+          if (user.password !== password) {
+            return { success: false, message: 'Невірний пароль!' };
+          }
+
+          return { success: true, user: user };
+        }
+
+        // Сохраняем успешного юзера как "текущего", чтобы другие страницы знали, кто залогинен
+        setCurrentUser(user) {
+          localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+      }
+
+      // ==========================================
+      // 2. VIEW (Работа с интерфейсом)
+      // ==========================================
+      class LoginView {
+        constructor() {
+          this.form = document.getElementById('loginForm');
+          this.emailInput = document.getElementById('logEmail');
+          this.passwordInput = document.getElementById('logPassword');
+        }
+
+        bindLoginSubmit(handler) {
+          this.form.addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            const email = this.emailInput.value;
+            const password = this.passwordInput.value;
+            handler(email, password); 
+          });
+        }
+
+        showError(message) {
+          // Выводим ошибку алертом (или можно добавить красную плашку прямо в HTML)
+          alert(message);
+        }
+
+        showSuccessAndRedirect() {
+          // Кидаем на главную страницу после входа
+          window.location.href = 'index.html'; 
+        }
+      }
+
+      // ==========================================
+      // 3. CONTROLLER (Мозг)
+      // ==========================================
+      class LoginController {
+        constructor(model, view) {
+          this.model = model;
+          this.view = view;
+          this.view.bindLoginSubmit(this.handleLogin.bind(this));
+        }
+
+        handleLogin(email, password) {
+          // Спрашиваем у модели, валидны ли данные
+          const authResult = this.model.authenticate(email, password);
+
+          if (!authResult.success) {
+            // Если ошибка (нет почты или неверный пароль) — показываем сообщение
+            this.view.showError(authResult.message);
+          } else {
+            // Если всё ок — "авторизуем" юзера и редиректим
+            this.model.setCurrentUser(authResult.user);
+            this.view.showSuccessAndRedirect();
+          }
+        }
+      }
+
+      // ИНИЦИАЛИЗАЦИЯ
+      const app = new LoginController(new LoginModel(), new LoginView());
+    </script>
+  </body>
+</html>

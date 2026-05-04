@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShortyURL - Реєстрація</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  </head>
+  <body class="bg-light d-flex flex-column min-vh-100">
+    <div class="container d-flex justify-content-center align-items-center flex-grow-1 my-5">
+      <div class="card p-4 shadow border-0" style="width: 100%; max-width: 450px">
+        <div class="d-flex flex-column align-items-center text-center mb-4">
+          <div class="d-flex align-items-center">
+            <img src="./logo.png" alt="ShortyURL" width="32" height="32" class="rounded-circle object-fit-cover" />
+            <h2 class="fw-bold ms-2 mb-0">ShortyURL</h2>
+          </div>
+          <p class="text-muted">Створіть свій безкоштовний акаунт</p>
+        </div>
+        
+        <form id="registerForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Ім'я</label>
+            <input type="text" id="regName" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email</label>
+            <input type="email" id="regEmail" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Пароль</label>
+            <input type="password" id="regPassword" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold d-block">Стать</label>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sex" id="m" value="Чоловіча" required />
+              <label class="form-check-label" for="m">Чоловіча</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sex" id="f" value="Жіноча" />
+              <label class="form-check-label" for="f">Жіноча</label>
+            </div>
+          </div>
+          <div class="mb-4" style="cursor: pointer" onclick="this.querySelector('input').showPicker()">
+            <label class="form-label fw-semibold">Дата народження</label>
+            <input type="date" id="regDob" class="form-control" required />
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm">
+            Зареєструватися
+          </button>
+          <div class="text-center mt-3">
+            <small>
+              Вже маєте акаунт?
+              <a href="login.html" class="text-decoration-none">Увійти</a>
+            </small>
+          </div>
+        </form>
+      </div>
+    </div>
+
+   <script>
+      class UserModel {
+        constructor() {
+          this.storageKey = 'shortyUsers'; 
+        }
+        getUsers() {
+          const users = localStorage.getItem(this.storageKey);
+          return users ? JSON.parse(users) : [];
+        }
+        emailExists(email) {
+          const users = this.getUsers();
+          return users.some(user => user.email === email);
+        }
+        saveUser(userData) {
+          const users = this.getUsers();
+          users.push(userData);
+          localStorage.setItem(this.storageKey, JSON.stringify(users));
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+        }
+      }
+
+      class RegisterView {
+        constructor() {
+          this.form = document.getElementById('registerForm');
+          this.nameInput = document.getElementById('regName');
+          this.emailInput = document.getElementById('regEmail');
+          
+
+          this.passwordInput = document.getElementById('regPassword');
+          
+          this.dobInput = document.getElementById('regDob');
+        }
+
+        bindRegisterSubmit(handler) {
+          this.form.addEventListener('submit', (e) => {
+            e.preventDefault(); 
+
+            const sexInput = document.querySelector('input[name="sex"]:checked');
+            
+            const userData = {
+              name: this.nameInput.value,
+              email: this.emailInput.value,
+              password: this.passwordInput.value, 
+              dob: this.dobInput.value,
+              sex: sexInput ? sexInput.value : 'Не вказано'
+            };
+
+            handler(userData); 
+          });
+        }
+
+        showError(message) {
+          alert(message);
+        }
+
+        showSuccessAndRedirect() {
+          alert('Реєстрація успішна!');
+          window.location.href = 'profile.html';
+        }
+      }
+
+      class RegisterController {
+        constructor(model, view) {
+          this.model = model;
+          this.view = view;
+          this.view.bindRegisterSubmit(this.handleRegister.bind(this));
+        }
+
+        handleRegister(userData) {
+          if (this.model.emailExists(userData.email)) {
+            this.view.showError('Користувач з таким Email вже існує!');
+            return; 
+          }
+
+          this.model.saveUser(userData);
+          this.view.showSuccessAndRedirect();
+        }
+      }
+
+      const app = new RegisterController(new UserModel(), new RegisterView());
+    </script>
+  </body>
+</html>
