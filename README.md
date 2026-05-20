@@ -11,4 +11,6 @@
 - Bootstrap 5: адаптивна верстка та модальні вікна.
 - LocalStorage: збереження даних клієнта
 
-Звіт (Google Docs): (https://docs.google.com/document/d/1sz965jBpPOf3Z4MEUga0PxaCrE3Fl2TeDcoVvann504/edit?usp=sharing)
+## Посилання
+* GitHub Pages: https://alex-0331-proj.github.io/lab-2/
+* Документ звіту (Google Drive): https://docs.google.com/document/d/1sz965jBpPOf3Z4MEUga0PxaCrE3Fl2TeDcoVvann504/edit?usp=sharing
